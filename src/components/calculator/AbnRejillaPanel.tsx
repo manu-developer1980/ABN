@@ -47,14 +47,14 @@ function AdditionTable({
                 className="bg-white"
               >
                 <td className="border border-slate-800 px-2 py-2">{r.part}</td>
-                <td className="border border-slate-800 px-2 py-2">{r.leftAfter}</td>
                 <td
                   className={`border border-slate-800 px-2 py-2 ${
                     lastComplete ? 'text-xl font-bold text-teal-800' : ''
                   }`}
                 >
-                  {r.rightAfter}
+                  {r.leftAfter}
                 </td>
+                <td className="border border-slate-800 px-2 py-2">{r.rightAfter}</td>
               </motion.tr>
             );
           })}
@@ -62,7 +62,8 @@ function AdditionTable({
       </table>
       {isComplete && rows.length > 0 ? (
         <p className="mt-2 text-center text-sm text-slate-600">
-          Resultado: {initialLeft} + {initialRight} = {rows[rows.length - 1].rightAfter}
+          Resultado: {initialLeft} + {initialRight} ={' '}
+          {rows[rows.length - 1].leftAfter}
         </p>
       ) : null}
     </div>

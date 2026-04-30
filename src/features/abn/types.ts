@@ -25,7 +25,7 @@ export type AbnStep = {
   partialResult?: number;
 };
 
-/** Rejilla tipo tabla del material ABN (traslado en suma). */
+/** Rejilla tipo tabla del material ABN (traslado en suma: de segundo sumando al primero). */
 export type AbnAdditionGrid = {
   kind: 'addition-transfer';
   initialLeft: number;

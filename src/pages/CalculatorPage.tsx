@@ -48,7 +48,7 @@ export function CalculatorPage() {
     const [x, y] = calculation.operands;
     switch (calculation.operation) {
       case 'addition':
-        return x;
+        return y;
       case 'subtraction':
         return y;
       case 'division':

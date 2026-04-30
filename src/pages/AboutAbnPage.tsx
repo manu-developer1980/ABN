@@ -21,6 +21,14 @@ export function AboutAbnPage() {
         El método se usa con frecuencia en <strong>Educación Primaria</strong> para
         dar flexibilidad y comprensión frente al mero automatismo.
       </p>
+      <p className="text-slate-700">
+        En esta web, la <strong>calculadora paso a paso</strong> está alineada con el
+        material de referencia del Colegio Los Pinos (apartados de suma, resta,
+        multiplicación y división del documento único ABN): en la suma, traslado desde
+        el segundo sumando hacia el primero hasta vaciar el segundo; en la división,
+        aproximaciones sucesivas restando productos del divisor por el mayor bloque
+        posible del cociente entero en cada resto.
+      </p>
       <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-base text-amber-950">
         Esta web es un <strong>recurso de apoyo</strong> para practicar y explicar
         ideas ABN; no es una fuente curricular oficial única. Consulta siempre las

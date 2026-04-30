@@ -1,4 +1,4 @@
-import { decomposeAscendingByPlaceValue } from './decomposition';
+import { decomposeByPlaceValue } from './decomposition';
 import type { AbnAdditionGrid, AbnCalculationResult, AbnStep } from './types';
 
 function buildDecompositionExpression(parts: number[]): string {
@@ -7,8 +7,9 @@ function buildDecompositionExpression(parts: number[]): string {
 }
 
 /**
- * Suma ABN en tabla de traslado: se descompone el **primer** sumando y cada parte
- * se pasa al segundo hasta que el primero queda en 0 (rejilla tipo aula).
+ * Suma ABN en tabla de traslado (Colegio Los Pinos / documento único ABN):
+ * se descompone el **segundo** sumando en centenas, decenas, unidades… y cada
+ * parte se transfiere del segundo al primero hasta que el segundo queda en 0.
  */
 export function generateAbnAdditionSteps(a: number, b: number): AbnCalculationResult {
   if (!Number.isInteger(a) || a < 0 || !Number.isInteger(b) || b < 0) {
@@ -16,6 +17,38 @@ export function generateAbnAdditionSteps(a: number, b: number): AbnCalculationRe
   }
 
   const steps: AbnStep[] = [];
+
+  if (b === 0) {
+    steps.push({
+      id: 'decomposition-b-0',
+      kind: 'decomposition',
+      title: 'Segundo sumando es 0',
+      explanation: `${a} + 0 = ${a}. No hay traslado que hacer.`,
+      expression: `${a} + 0 = ${a}`,
+    });
+    steps.push({
+      id: 'result',
+      kind: 'result',
+      title: 'Resultado final',
+      explanation: `La suma de ${a} y ${b} es ${a}.`,
+      expression: `${a} + ${b} = ${a}`,
+      partialResult: a,
+    });
+    const grid: AbnAdditionGrid = {
+      kind: 'addition-transfer',
+      initialLeft: a,
+      initialRight: 0,
+      parts: [],
+      rows: [],
+    };
+    return {
+      operation: 'addition',
+      operands: [a, b],
+      result: a,
+      steps,
+      abnGrid: grid,
+    };
+  }
 
   if (a === 0) {
     steps.push({
@@ -49,13 +82,13 @@ export function generateAbnAdditionSteps(a: number, b: number): AbnCalculationRe
     };
   }
 
-  const parts = decomposeAscendingByPlaceValue(a);
-  const expr = `${a} = ${buildDecompositionExpression(parts)}`;
+  const parts = decomposeByPlaceValue(b);
+  const expr = `${b} = ${buildDecompositionExpression(parts)}`;
   steps.push({
-    id: `decomposition-${a}`,
+    id: `decomposition-${b}`,
     kind: 'decomposition',
-    title: `Descomponemos ${a}`,
-    explanation: `En la rejilla ABN descomponemos el primer sumando ${a} en ${buildDecompositionExpression(parts)} y lo vamos pasando al segundo (${b}).`,
+    title: `Descomponemos ${b}`,
+    explanation: `En la rejilla ABN descomponemos el segundo sumando ${b} en ${buildDecompositionExpression(parts)} y cada parte la pasamos del segundo al primero (${a}), hasta que el segundo queda en 0.`,
     expression: expr,
   });
 
@@ -66,8 +99,8 @@ export function generateAbnAdditionSteps(a: number, b: number): AbnCalculationRe
   parts.forEach((fragment, index) => {
     const beforeLeft = left;
     const beforeRight = right;
-    left -= fragment;
-    right += fragment;
+    left += fragment;
+    right -= fragment;
     gridRows.push({
       part: fragment,
       leftAfter: left,
@@ -77,11 +110,11 @@ export function generateAbnAdditionSteps(a: number, b: number): AbnCalculationRe
       id: `transfer-${fragment}-${index}`,
       kind: 'addition-transfer',
       title: `Pasamos ${fragment}`,
-      explanation: `Quitamos ${fragment} del primer sumando (${beforeLeft} → ${left}) y lo sumamos al segundo (${beforeRight} → ${right}).`,
-      expression: `${beforeLeft} − ${fragment} = ${left}; ${beforeRight} + ${fragment} = ${right}`,
-      beforeValue: beforeLeft,
+      explanation: `Quitamos ${fragment} del segundo sumando (${beforeRight} → ${right}) y lo sumamos al primero (${beforeLeft} → ${left}).`,
+      expression: `${beforeRight} − ${fragment} = ${right}; ${beforeLeft} + ${fragment} = ${left}`,
+      beforeValue: beforeRight,
       changeValue: fragment,
-      afterValue: left,
+      afterValue: right,
     });
   });
 

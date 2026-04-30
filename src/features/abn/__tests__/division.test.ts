@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { generateAbnDivisionSteps } from '../division';
 
 describe('generateAbnDivisionSteps', () => {
-  it('computes 156 ÷ 12 with doc-style chunks', () => {
+  it('computes 156 ÷ 12 with successive-approximation chunks', () => {
     const r = generateAbnDivisionSteps(156, 12);
     expect(r.result).toBe(13);
     expect(r.operation).toBe('division');
@@ -14,6 +14,16 @@ describe('generateAbnDivisionSteps', () => {
     if (r.abnGrid?.kind === 'division-three-col') {
       expect(r.abnGrid.rows.length).toBeGreaterThanOrEqual(2);
     }
+  });
+
+  it('matches Los Pinos 157 ÷ 9 (90 then 63)', () => {
+    const r = generateAbnDivisionSteps(157, 9);
+    expect(r.result).toBe(17);
+    const chunks = r.steps.filter((s) => s.kind === 'division-chunk');
+    expect(chunks).toHaveLength(2);
+    expect(chunks[0].changeValue).toBe(90);
+    expect(chunks[1].changeValue).toBe(63);
+    expect(chunks[1].afterValue).toBe(4);
   });
 
   it('throws on divisor zero', () => {

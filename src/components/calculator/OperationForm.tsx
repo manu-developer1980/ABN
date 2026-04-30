@@ -28,7 +28,7 @@ const LABELS: Record<
     a: 'Primer sumando (A)',
     b: 'Segundo sumando (B)',
     legend: 'Suma ABN',
-    hint: 'Descomposición del primer sumando y traslado al segundo (rejilla tipo aula).',
+    hint: 'Descomposición del segundo sumando y traslado al primero hasta vaciar B (rejilla ABN, Colegio Los Pinos).',
   },
   subtraction: {
     a: 'Minuendo',
@@ -46,7 +46,7 @@ const LABELS: Record<
     a: 'Dividendo',
     b: 'Divisor',
     legend: 'División ABN',
-    hint: 'Cociente entero: descomponemos el cociente y quitamos grupos del divisor (divisor > 0).',
+    hint: 'Cociente entero: aproximaciones sucesivas (mayor bloque del cociente posible en cada resto) × divisor (divisor > 0).',
   },
 };
 

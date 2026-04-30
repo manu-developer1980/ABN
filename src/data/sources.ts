@@ -17,6 +17,30 @@ export type SourceCategory = {
   items: SourceItem[];
 };
 
+/** Bloque destacado en la página Fuentes (centro colaborador). */
+export const losPinosFeaturedBlock = {
+  heading: 'Colegio Los Pinos',
+  subheading: 'Algeciras (Cádiz)',
+  intro:
+    'Esta aplicación se entrega al centro como apoyo al trabajo con el método ABN. Aquí tienen prioridad los materiales de referencia que el colegio pone a disposición de las familias y del profesorado.',
+  items: [
+    {
+      title: 'Introducción al algoritmo ABN',
+      type: 'Artículo en la web del centro',
+      usage:
+        'Visión general del método, ventajas en el aula y respuestas a dudas frecuentes sobre el algoritmo ABN.',
+      href: 'https://colegiolospinos.eu/introduccion-al-algoritmo-abn/',
+    },
+    {
+      title: 'Algoritmo ABN — documento único (PDF)',
+      type: 'Documento descargable',
+      usage:
+        'Texto de referencia del centro para profundizar en el algoritmo ABN y su implantación.',
+      href: 'https://colegiolospinos.eu/wp-content/uploads/2016/01/ALGORITMO-ABN-_documento-u%CC%81nico_.pdf',
+    },
+  ] satisfies SourceItem[],
+};
+
 export const sourceCategories: SourceCategory[] = [
   {
     id: 'theory',

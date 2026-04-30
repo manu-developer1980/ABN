@@ -5,14 +5,11 @@ import type {
   AbnStep,
 } from './types';
 
-function buildDecompositionExpression(parts: number[]): string {
-  if (parts.length === 0) return '';
-  return parts.join(' + ');
-}
-
 /**
- * División ABN: cociente descompuesto en grupos del divisor;
- * rejilla de tres columnas alineada con el material (resto | quitado | cociente parcial).
+ * División ABN según aproximación sucesiva (documento único Colegio Los Pinos):
+ * en cada resto se considera el cociente entero posible q = ⌊resto/divisor⌋ y se
+ * quita primero el mayor bloque de valor posicional de q (p. ej. 157÷9: 10, luego 7),
+ * coincidiendo con los ejemplos del PDF (77÷9, 157÷9, 59831÷25).
  */
 export function generateAbnDivisionSteps(
   dividend: number,
@@ -65,42 +62,50 @@ export function generateAbnDivisionSteps(
     };
   }
 
-  const parts = decomposeByPlaceValue(quotient);
-  const expr = `${quotient} = ${buildDecompositionExpression(parts)}`;
   steps.push({
-    id: `decomposition-quotient-${quotient}`,
+    id: 'division-method',
     kind: 'decomposition',
-    title: `Descomponemos el cociente entero`,
-    explanation: `${dividend} ÷ ${divisor} tiene cociente entero ${quotient} y resto ${remainder}. Descomponemos ${quotient} en ${buildDecompositionExpression(parts)} para quitar grupos de ${divisor}.`,
-    expression: expr,
+    title: 'División por aproximaciones',
+    explanation: `Para ${dividend} ÷ ${divisor} vamos restando del dividendo (o del resto que va quedando) productos del divisor por un factor, siempre buscando una buena aproximación. En cada paso tomamos el mayor bloque de valor posicional del cociente entero que cabe en el resto actual (metodología ABN).`,
+    expression: `${dividend} ÷ ${divisor}`,
   });
 
   let runningRemainder = dividend;
   let accumulatedGroups = 0;
   const gridRows: AbnDivisionGrid['rows'] = [];
+  let chunkIndex = 0;
 
-  parts.forEach((groupCount, index) => {
+  while (runningRemainder >= divisor) {
+    const q = Math.floor(runningRemainder / divisor);
+    if (q === 0) break;
+
+    const parts = decomposeByPlaceValue(q);
+    const groupCount = parts[0];
     const product = groupCount * divisor;
     const before = runningRemainder;
+
     gridRows.push({
       remainder: before,
       subtracted: product,
       partialQuotient: groupCount,
     });
+
     runningRemainder -= product;
     accumulatedGroups += groupCount;
+
     steps.push({
-      id: `div-chunk-${groupCount}-${index}`,
+      id: `div-chunk-${groupCount}-${chunkIndex}`,
       kind: 'division-chunk',
       title: `Quitamos ${groupCount} grupo${groupCount === 1 ? '' : 's'} de ${divisor}`,
-      explanation: `Restamos ${product} (${groupCount} × ${divisor}) del resto actual (${before}).`,
+      explanation: `En el resto ${before} caben hasta ${q} veces el divisor; quitamos ${groupCount} × ${divisor} = ${product}.`,
       expression: `${before} − ${product} = ${runningRemainder}`,
       beforeValue: before,
       changeValue: product,
       afterValue: runningRemainder,
       partialResult: accumulatedGroups,
     });
-  });
+    chunkIndex += 1;
+  }
 
   gridRows.push({
     remainder: runningRemainder,
