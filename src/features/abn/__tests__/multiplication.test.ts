@@ -20,4 +20,15 @@ describe('generateAbnMultiplicationSteps', () => {
     const r = generateAbnMultiplicationSteps(12, 0);
     expect(r.result).toBe(0);
   });
+
+  it('emits one partial-product step per multiplicand part when multiplier is a single place-value part (rejilla 3 col)', () => {
+    const r = generateAbnMultiplicationSteps(47, 8);
+    expect(r.result).toBe(376);
+    expect(r.abnGrid?.kind).toBe('multiplication-3col');
+    if (r.abnGrid?.kind !== 'multiplication-3col') return;
+    const partials = r.steps.filter((s) => s.kind === 'partial-product');
+    expect(partials.length).toBe(r.abnGrid.multiplicandParts.length);
+    expect(partials[0].title).toContain('40');
+    expect(partials[1].title).toContain('7');
+  });
 });

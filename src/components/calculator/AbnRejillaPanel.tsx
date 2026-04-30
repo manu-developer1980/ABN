@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { visibleGridRowCount } from '../../features/abn/rejillaVisibility';
 import type {
   AbnCalculationResult,
   AbnDivisionGrid,
@@ -10,47 +11,6 @@ type AbnRejillaPanelProps = {
   calculation: AbnCalculationResult;
   stepIndex: number;
 };
-
-function visibleAdditionRows(calc: AbnCalculationResult, stepIndex: number): number {
-  const g = calc.abnGrid;
-  if (!g || g.kind !== 'addition-transfer') return 0;
-  const n = g.parts.length;
-  if (stepIndex === 0) return 0;
-  if (stepIndex >= calc.steps.length - 1) return n;
-  return Math.min(stepIndex, n);
-}
-
-function visibleSubtractionRows(calc: AbnCalculationResult, stepIndex: number): number {
-  const g = calc.abnGrid;
-  if (!g || g.kind !== 'subtraction-parallel') return 0;
-  const n = g.chunks.length;
-  if (stepIndex === 0) return 0;
-  if (stepIndex >= calc.steps.length - 1) return n;
-  return Math.min(stepIndex, n);
-}
-
-function visibleDivisionRows(calc: AbnCalculationResult, stepIndex: number): number {
-  const g = calc.abnGrid;
-  if (!g || g.kind !== 'division-three-col') return 0;
-  const total = g.rows.length;
-  if (stepIndex === 0) return 0;
-  return Math.min(stepIndex, total);
-}
-
-function visibleMultiplicationRows(calc: AbnCalculationResult, stepIndex: number): number {
-  const g = calc.abnGrid;
-  if (!g) return 0;
-  if (g.kind === 'multiplication-3col') {
-    const n = g.multiplicandParts.length;
-    if (stepIndex === 0) return 0;
-    return n;
-  }
-  if (g.kind === 'multiplication-matrix') {
-    if (stepIndex === 0) return 0;
-    return g.aParts.length;
-  }
-  return 0;
-}
 
 function AdditionTable({
   grid,
@@ -353,35 +313,25 @@ export function AbnRejillaPanel({ calculation, stepIndex }: AbnRejillaPanelProps
   if (!grid) return null;
 
   const isComplete = stepIndex >= calculation.steps.length - 1;
+  const vr = visibleGridRowCount(calculation, stepIndex);
 
   if (grid.kind === 'addition-transfer') {
-    const vr = visibleAdditionRows(calculation, stepIndex);
     return <AdditionTable grid={grid} visibleRows={vr} isComplete={isComplete} />;
   }
 
   if (grid.kind === 'subtraction-parallel') {
-    const vr = visibleSubtractionRows(calculation, stepIndex);
-    return (
-      <SubtractionTable grid={grid} visibleRows={vr} isComplete={isComplete} />
-    );
+    return <SubtractionTable grid={grid} visibleRows={vr} isComplete={isComplete} />;
   }
 
   if (grid.kind === 'multiplication-3col') {
-    const vr = visibleMultiplicationRows(calculation, stepIndex);
-    return (
-      <Multiplication3Col grid={grid} visibleRows={vr} isComplete={isComplete} />
-    );
+    return <Multiplication3Col grid={grid} visibleRows={vr} isComplete={isComplete} />;
   }
 
   if (grid.kind === 'multiplication-matrix') {
-    const vr = visibleMultiplicationRows(calculation, stepIndex);
-    return (
-      <MultiplicationMatrix grid={grid} visibleRows={vr} isComplete={isComplete} />
-    );
+    return <MultiplicationMatrix grid={grid} visibleRows={vr} isComplete={isComplete} />;
   }
 
   if (grid.kind === 'division-three-col') {
-    const vr = visibleDivisionRows(calculation, stepIndex);
     return <DivisionTable grid={grid} visibleRows={vr} />;
   }
 

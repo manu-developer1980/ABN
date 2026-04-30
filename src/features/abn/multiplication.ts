@@ -70,28 +70,55 @@ export function generateAbnMultiplicationSteps(a: number, b: number): AbnCalcula
   });
 
   let running = 0;
-  parts.forEach((fragment, index) => {
-    const product = a * fragment;
-    const before = running;
-    running += product;
-    steps.push({
-      id: `partial-${fragment}-${index}`,
-      kind: 'partial-product',
-      title: `Calculamos ${a} × ${fragment}`,
-      explanation:
-        before === 0
-          ? `Primer producto parcial: ${a} × ${fragment}.`
-          : `Sumamos este producto al acumulado (${before}).`,
-      expression:
-        before === 0
-          ? `${a} × ${fragment} = ${product}`
-          : `${before} + ${product} = ${running}`,
-      beforeValue: before,
-      changeValue: product,
-      afterValue: running,
-      partialResult: product,
+  if (parts.length === 1) {
+    const fragment = parts[0];
+    const aParts = decomposeByPlaceValue(a);
+    aParts.forEach((ap, index) => {
+      const product = ap * fragment;
+      const before = running;
+      running += product;
+      steps.push({
+        id: `partial-${ap}-${index}`,
+        kind: 'partial-product',
+        title: `Calculamos ${ap} × ${fragment}`,
+        explanation:
+          before === 0
+            ? `Primer producto parcial: ${ap} × ${fragment} = ${product}.`
+            : `Sumamos este producto al acumulado (${before} + ${product} = ${running}).`,
+        expression:
+          before === 0
+            ? `${ap} × ${fragment} = ${product}`
+            : `${before} + ${product} = ${running}`,
+        beforeValue: before,
+        changeValue: product,
+        afterValue: running,
+        partialResult: product,
+      });
     });
-  });
+  } else {
+    parts.forEach((fragment, index) => {
+      const product = a * fragment;
+      const before = running;
+      running += product;
+      steps.push({
+        id: `partial-${fragment}-${index}`,
+        kind: 'partial-product',
+        title: `Calculamos ${a} × ${fragment}`,
+        explanation:
+          before === 0
+            ? `Primer producto parcial: ${a} × ${fragment}.`
+            : `Sumamos este producto al acumulado (${before}).`,
+        expression:
+          before === 0
+            ? `${a} × ${fragment} = ${product}`
+            : `${before} + ${product} = ${running}`,
+        beforeValue: before,
+        changeValue: product,
+        afterValue: running,
+        partialResult: product,
+      });
+    });
+  }
 
   steps.push({
     id: 'result',
