@@ -70,7 +70,6 @@ export function generateAbnDivisionSteps(
       changeValue: product,
       afterValue: runningRemainder,
       partialResult: accumulatedGroups,
-      meta: { divisionGroups: groupCount },
     });
   });
 

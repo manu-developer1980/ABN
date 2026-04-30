@@ -7,7 +7,6 @@ import { PlaceValueBlocks } from '../components/calculator/PlaceValueBlocks';
 import { StepCard } from '../components/calculator/StepCard';
 import { StepNavigator } from '../components/calculator/StepNavigator';
 import { StepsSummary } from '../components/calculator/StepsSummary';
-import { StepVisualGrids } from '../components/calculator/StepVisualGrids';
 import { VisualNumberLine } from '../components/calculator/VisualNumberLine';
 import { Button } from '../components/ui/Button';
 
@@ -137,8 +136,7 @@ export function CalculatorPage() {
       <header>
         <h1 className="text-3xl font-bold text-teal-950">Calculadora ABN</h1>
         <p className="mt-2 max-w-2xl text-lg text-slate-700">
-          Suma, resta, multiplicación y división con pasos explicados y rejillas
-          gráficas de apoyo.
+          Suma, resta, multiplicación y división con pasos explicados.
         </p>
       </header>
 
@@ -186,7 +184,6 @@ export function CalculatorPage() {
               {placeBlocksValue !== null && currentStep.kind === 'decomposition' ? (
                 <PlaceValueBlocks value={placeBlocksValue} />
               ) : null}
-              <StepVisualGrids calculation={calculation} currentStep={currentStep} />
               {showNumberLine ? (
                 <VisualNumberLine
                   before={currentStep.beforeValue}

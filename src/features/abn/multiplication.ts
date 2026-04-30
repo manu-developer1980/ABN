@@ -47,7 +47,6 @@ export function generateAbnMultiplicationSteps(a: number, b: number): AbnCalcula
       changeValue: product,
       afterValue: running,
       partialResult: product,
-      meta: { multiplicationFragment: fragment },
     });
   });
 

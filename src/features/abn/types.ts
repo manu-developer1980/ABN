@@ -12,11 +12,6 @@ export type AbnStepKind =
   | 'division-chunk'
   | 'result';
 
-export type AbnStepMeta = {
-  multiplicationFragment?: number;
-  divisionGroups?: number;
-};
-
 export type AbnStep = {
   id: string;
   kind: AbnStepKind;
@@ -27,7 +22,6 @@ export type AbnStep = {
   changeValue?: number;
   afterValue?: number;
   partialResult?: number;
-  meta?: AbnStepMeta;
 };
 
 export type AbnCalculationResult = {
