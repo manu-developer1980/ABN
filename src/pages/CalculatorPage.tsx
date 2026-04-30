@@ -8,7 +8,6 @@ import { StepCard } from '../components/calculator/StepCard';
 import { StepNavigator } from '../components/calculator/StepNavigator';
 import { StepsSummary } from '../components/calculator/StepsSummary';
 import { AbnRejillaPanel } from '../components/calculator/AbnRejillaPanel';
-import { VisualNumberLine } from '../components/calculator/VisualNumberLine';
 import { Button } from '../components/ui/Button';
 
 function operationSymbol(op: AbnOperation): string {
@@ -42,12 +41,6 @@ export function CalculatorPage() {
     Math.max(0, steps.length > 0 ? steps.length - 1 : 0),
   );
   const currentStep = steps.length > 0 ? steps[safeIndex] : undefined;
-
-  const scaleMax = useMemo(() => {
-    if (!calculation) return 0;
-    const [x, y] = calculation.operands;
-    return Math.max(x, y, calculation.result, x + y, x * y, 1);
-  }, [calculation]);
 
   const placeBlocksValue = useMemo(() => {
     if (!calculation || !currentStep) return null;
@@ -125,16 +118,6 @@ export function CalculatorPage() {
       ? calculation.operands[0] % calculation.operands[1]
       : null;
 
-  const showNumberLine =
-    currentStep &&
-      (currentStep.kind === 'accumulation' ||
-      currentStep.kind === 'addition-transfer' ||
-      currentStep.kind === 'subtraction-parallel' ||
-      currentStep.kind === 'partial-product' ||
-      currentStep.kind === 'division-chunk') &&
-    currentStep.beforeValue !== undefined &&
-    currentStep.afterValue !== undefined;
-
   return (
     <div className="space-y-8">
       <header>
@@ -190,20 +173,6 @@ export function CalculatorPage() {
               ) : null}
               {calculation.abnGrid ? (
                 <AbnRejillaPanel calculation={calculation} stepIndex={safeIndex} />
-              ) : null}
-              {showNumberLine ? (
-                <VisualNumberLine
-                  before={currentStep.beforeValue}
-                  after={currentStep.afterValue}
-                  max={scaleMax}
-                  mode={
-                    currentStep.kind === 'division-chunk' ||
-                    currentStep.kind === 'subtraction-parallel' ||
-                    currentStep.kind === 'addition-transfer'
-                      ? 'decrease'
-                      : 'increase'
-                  }
-                />
               ) : null}
             </>
           ) : null}

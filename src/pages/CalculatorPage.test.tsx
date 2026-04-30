@@ -67,4 +67,5 @@ describe('CalculatorPage', () => {
     await user.click(screen.getByRole('button', { name: /calcular/i }));
     expect(await screen.findByRole('alert')).toHaveTextContent(/divisor/i);
   });
+
 });
