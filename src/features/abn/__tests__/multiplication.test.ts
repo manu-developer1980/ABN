@@ -13,6 +13,7 @@ describe('generateAbnMultiplicationSteps', () => {
     const partials = r.steps.filter((s) => s.kind === 'partial-product');
     expect(partials.length).toBeGreaterThanOrEqual(2);
     expect(partials[0].expression).toMatch(/23/);
+    expect(r.abnGrid?.kind).toBe('multiplication-matrix');
   });
 
   it('handles factor zero', () => {

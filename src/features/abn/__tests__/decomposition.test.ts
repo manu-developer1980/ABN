@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { decomposeByPlaceValue } from '../decomposition';
+import {
+  decomposeAscendingByPlaceValue,
+  decomposeByPlaceValue,
+} from '../decomposition';
 
 describe('decomposeByPlaceValue', () => {
   it('decomposes 276 into hundreds, tens, ones', () => {
@@ -20,5 +23,11 @@ describe('decomposeByPlaceValue', () => {
 
   it('throws for negative numbers', () => {
     expect(() => decomposeByPlaceValue(-1)).toThrow(RangeError);
+  });
+});
+
+describe('decomposeAscendingByPlaceValue', () => {
+  it('orders 12 as units then tens', () => {
+    expect(decomposeAscendingByPlaceValue(12)).toEqual([2, 10]);
   });
 });

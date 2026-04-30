@@ -10,6 +10,10 @@ describe('generateAbnDivisionSteps', () => {
     expect(chunks.length).toBe(2);
     expect(chunks[0].changeValue).toBe(120);
     expect(chunks[1].changeValue).toBe(36);
+    expect(r.abnGrid?.kind).toBe('division-three-col');
+    if (r.abnGrid?.kind === 'division-three-col') {
+      expect(r.abnGrid.rows.length).toBeGreaterThanOrEqual(2);
+    }
   });
 
   it('throws on divisor zero', () => {

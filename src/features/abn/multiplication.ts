@@ -1,13 +1,56 @@
 import { decomposeByPlaceValue } from './decomposition';
-import type { AbnCalculationResult, AbnStep } from './types';
+import type {
+  AbnCalculationResult,
+  AbnMultiplicationGrid,
+  AbnStep,
+} from './types';
 
 function buildDecompositionExpression(parts: number[]): string {
   if (parts.length === 0) return '';
   return parts.join(' + ');
 }
 
+function buildMultiplicationGrid(
+  a: number,
+  b: number,
+): AbnMultiplicationGrid {
+  const aParts = decomposeByPlaceValue(a);
+  const bParts = decomposeByPlaceValue(b);
+
+  if (bParts.length <= 1) {
+    const multiplier = bParts.length === 0 ? 0 : bParts[0];
+    const partialProducts = aParts.map((p) => p * multiplier);
+    const runningTotals: (number | null)[] = [];
+    let acc = 0;
+    partialProducts.forEach((pp, i) => {
+      acc += pp;
+      runningTotals.push(i === partialProducts.length - 1 ? acc : acc);
+    });
+    return {
+      kind: 'multiplication-3col',
+      multiplicandParts: aParts,
+      multiplier: multiplier,
+      partialProducts,
+      runningTotals,
+    };
+  }
+
+  const matrix = aParts.map((ai) => bParts.map((bj) => ai * bj));
+  const rowSums = matrix.map((row) => row.reduce((s, x) => s + x, 0));
+  const total = rowSums.reduce((s, x) => s + x, 0);
+  return {
+    kind: 'multiplication-matrix',
+    aParts,
+    bParts,
+    matrix,
+    rowSums,
+    total,
+  };
+}
+
 /**
- * Multiplicación ABN: descomposición del segundo factor y suma de productos parciales.
+ * Multiplicación ABN: descomposición del multiplicador y productos parciales;
+ * datos para rejilla 3 columnas o matriz según las cifras del multiplicador.
  */
 export function generateAbnMultiplicationSteps(a: number, b: number): AbnCalculationResult {
   if (!Number.isInteger(a) || a < 0 || !Number.isInteger(b) || b < 0) {
@@ -59,10 +102,13 @@ export function generateAbnMultiplicationSteps(a: number, b: number): AbnCalcula
     partialResult: a * b,
   });
 
+  const abnGrid = buildMultiplicationGrid(a, b);
+
   return {
     operation: 'multiplication',
     operands: [a, b],
     result: a * b,
     steps,
+    abnGrid,
   };
 }

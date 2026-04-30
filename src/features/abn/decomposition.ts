@@ -21,3 +21,8 @@ export function decomposeByPlaceValue(value: number): number[] {
   }
   return parts;
 }
+
+/** Partes por valor posicional ordenadas de menor a mayor (p. ej. 12 → [2, 10]). */
+export function decomposeAscendingByPlaceValue(value: number): number[] {
+  return [...decomposeByPlaceValue(value)].sort((x, y) => x - y);
+}

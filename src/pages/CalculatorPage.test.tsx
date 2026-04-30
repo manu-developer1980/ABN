@@ -22,7 +22,7 @@ describe('CalculatorPage', () => {
     await user.type(screen.getByLabelText(/segundo sumando/i), '276');
     await user.click(screen.getByRole('button', { name: /calcular/i }));
     expect(
-      await screen.findByRole('heading', { name: /descomponemos 276/i }),
+      await screen.findByRole('heading', { name: /descomponemos 348/i }),
     ).toBeInTheDocument();
   });
 
@@ -33,15 +33,15 @@ describe('CalculatorPage', () => {
     await user.type(screen.getByLabelText(/segundo sumando/i), '5');
     await user.click(screen.getByRole('button', { name: /calcular/i }));
     expect(
-      await screen.findByRole('heading', { name: /descomponemos 5/i }),
+      await screen.findByRole('heading', { name: /descomponemos 10/i }),
     ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /siguiente/i }));
     expect(
-      await screen.findByRole('heading', { name: /añadimos 5/i }),
+      await screen.findByRole('heading', { name: /pasamos 10/i }),
     ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /anterior/i }));
     expect(
-      screen.getByRole('heading', { name: /descomponemos 5/i }),
+      screen.getByRole('heading', { name: /descomponemos 10/i }),
     ).toBeInTheDocument();
   });
 
@@ -51,7 +51,7 @@ describe('CalculatorPage', () => {
     await user.type(screen.getByLabelText(/primer sumando/i), '2');
     await user.type(screen.getByLabelText(/segundo sumando/i), '3');
     await user.click(screen.getByRole('button', { name: /calcular/i }));
-    await screen.findByRole('heading', { name: /descomponemos 3/i });
+    await screen.findByRole('heading', { name: /descomponemos 2/i });
     await user.click(screen.getByRole('button', { name: /ver todos los pasos/i }));
     expect(
       await screen.findByRole('heading', { name: /todos los pasos/i }),

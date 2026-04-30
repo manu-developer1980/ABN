@@ -7,6 +7,7 @@ import { PlaceValueBlocks } from '../components/calculator/PlaceValueBlocks';
 import { StepCard } from '../components/calculator/StepCard';
 import { StepNavigator } from '../components/calculator/StepNavigator';
 import { StepsSummary } from '../components/calculator/StepsSummary';
+import { AbnRejillaPanel } from '../components/calculator/AbnRejillaPanel';
 import { VisualNumberLine } from '../components/calculator/VisualNumberLine';
 import { Button } from '../components/ui/Button';
 
@@ -53,8 +54,10 @@ export function CalculatorPage() {
     if (currentStep.kind !== 'decomposition') return null;
     const [x, y] = calculation.operands;
     switch (calculation.operation) {
+      case 'addition':
+        return x;
       case 'subtraction':
-        return x - y;
+        return y;
       case 'division':
         return Math.floor(x / y);
       default:
@@ -124,8 +127,9 @@ export function CalculatorPage() {
 
   const showNumberLine =
     currentStep &&
-    (currentStep.kind === 'accumulation' ||
-      currentStep.kind === 'subtraction-jump' ||
+      (currentStep.kind === 'accumulation' ||
+      currentStep.kind === 'addition-transfer' ||
+      currentStep.kind === 'subtraction-parallel' ||
       currentStep.kind === 'partial-product' ||
       currentStep.kind === 'division-chunk') &&
     currentStep.beforeValue !== undefined &&
@@ -184,13 +188,20 @@ export function CalculatorPage() {
               {placeBlocksValue !== null && currentStep.kind === 'decomposition' ? (
                 <PlaceValueBlocks value={placeBlocksValue} />
               ) : null}
+              {calculation.abnGrid ? (
+                <AbnRejillaPanel calculation={calculation} stepIndex={safeIndex} />
+              ) : null}
               {showNumberLine ? (
                 <VisualNumberLine
                   before={currentStep.beforeValue}
                   after={currentStep.afterValue}
                   max={scaleMax}
                   mode={
-                    currentStep.kind === 'division-chunk' ? 'decrease' : 'increase'
+                    currentStep.kind === 'division-chunk' ||
+                    currentStep.kind === 'subtraction-parallel' ||
+                    currentStep.kind === 'addition-transfer'
+                      ? 'decrease'
+                      : 'increase'
                   }
                 />
               ) : null}

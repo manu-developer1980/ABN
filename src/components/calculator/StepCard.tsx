@@ -18,6 +18,12 @@ function changeDisplay(step: AbnStep): { label: string; text: string } | null {
   if (step.kind === 'division-chunk') {
     return { label: 'Quitamos', text: `−${step.changeValue}` };
   }
+  if (step.kind === 'subtraction-parallel') {
+    return { label: 'Restamos', text: `−${step.changeValue}` };
+  }
+  if (step.kind === 'addition-transfer') {
+    return { label: 'Pasamos', text: String(step.changeValue) };
+  }
   return { label: 'Cambio', text: `+${step.changeValue}` };
 }
 

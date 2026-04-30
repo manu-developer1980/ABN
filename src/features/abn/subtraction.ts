@@ -1,5 +1,5 @@
 import { decomposeByPlaceValue } from './decomposition';
-import type { AbnCalculationResult, AbnStep } from './types';
+import type { AbnCalculationResult, AbnStep, AbnSubtractionGrid } from './types';
 
 function buildDecompositionExpression(parts: number[]): string {
   if (parts.length === 0) return '';
@@ -7,8 +7,8 @@ function buildDecompositionExpression(parts: number[]): string {
 }
 
 /**
- * Resta ABN: descomponemos la diferencia (minuendo − sustrahendo) y la vamos
- * sumando al sustrahendo hasta llegar al minuendo (equivalente a una escalera ascendente).
+ * Resta ABN en rejilla paralela: en cada fila se resta la misma cantidad del minuendo
+ * y de lo que aún falta por restar (hasta que la tercera columna llega a 0).
  */
 export function generateAbnSubtractionSteps(
   minuend: number,
@@ -32,7 +32,7 @@ export function generateAbnSubtractionSteps(
       id: 'decomposition-diff-0',
       kind: 'decomposition',
       title: 'Diferencia cero',
-      explanation: `${minuend} − ${subtrahend} = 0. No hace falta descomponer.`,
+      explanation: `${minuend} − ${subtrahend} = 0.`,
       expression: `${minuend} − ${subtrahend} = 0`,
     });
     steps.push({
@@ -43,38 +43,52 @@ export function generateAbnSubtractionSteps(
       expression: `${minuend} − ${subtrahend} = 0`,
       partialResult: 0,
     });
+    const grid: AbnSubtractionGrid = {
+      kind: 'subtraction-parallel',
+      initialMinuend: minuend,
+      initialSubtrahend: subtrahend,
+      chunks: [],
+      rows: [],
+    };
     return {
       operation: 'subtraction',
       operands: [minuend, subtrahend],
       result: 0,
       steps,
+      abnGrid: grid,
     };
   }
 
-  const parts = decomposeByPlaceValue(diff);
-  const expr = `${diff} = ${buildDecompositionExpression(parts)}`;
+  const chunks = decomposeByPlaceValue(subtrahend);
+  const expr = `${subtrahend} = ${buildDecompositionExpression(chunks)}`;
 
   steps.push({
-    id: `decomposition-diff-${diff}`,
+    id: `decomposition-sub-${subtrahend}`,
     kind: 'decomposition',
-    title: `Descomponemos la diferencia`,
-    explanation: `${minuend} − ${subtrahend} = ${diff}. Descomponemos ${diff} en ${buildDecompositionExpression(parts)} para ir sumando al sustrahendo (${subtrahend}) hasta llegar al minuendo (${minuend}).`,
+    title: `Descomponemos el sustrahendo`,
+    explanation: `Restamos por partes: descomponemos ${subtrahend} en ${buildDecompositionExpression(chunks)}. En cada paso restamos la misma cantidad del minuendo y de “lo que falta por restar”.`,
     expression: expr,
   });
 
-  let running = subtrahend;
-  parts.forEach((fragment, index) => {
-    const before = running;
-    running += fragment;
+  let m = minuend;
+  let s = subtrahend;
+  const gridRows: AbnSubtractionGrid['rows'] = [];
+
+  chunks.forEach((chunk, index) => {
+    const beforeM = m;
+    const beforeS = s;
+    m -= chunk;
+    s -= chunk;
+    gridRows.push({ chunk, minuendAfter: m, subtrahendAfter: s });
     steps.push({
-      id: `sub-jump-${fragment}-${index}`,
-      kind: 'subtraction-jump',
-      title: `Subimos ${fragment}`,
-      explanation: `Partimos de ${before} y añadimos ${fragment}. Nos acercamos al minuendo.`,
-      expression: `${before} + ${fragment} = ${running}`,
-      beforeValue: before,
-      changeValue: fragment,
-      afterValue: running,
+      id: `parallel-${chunk}-${index}`,
+      kind: 'subtraction-parallel',
+      title: `Restamos ${chunk}`,
+      explanation: `Minuendo: ${beforeM} − ${chunk} = ${m}. Falta por restar: ${beforeS} − ${chunk} = ${s}.`,
+      expression: `${beforeM} − ${chunk} = ${m}; ${beforeS} − ${chunk} = ${s}`,
+      beforeValue: beforeM,
+      changeValue: chunk,
+      afterValue: m,
     });
   });
 
@@ -82,15 +96,24 @@ export function generateAbnSubtractionSteps(
     id: 'result',
     kind: 'result',
     title: 'Resultado final',
-    explanation: `La resta de ${minuend} y ${subtrahend} es ${diff}.`,
+    explanation: `La resta de ${minuend} y ${subtrahend} es ${diff}. El minuendo queda en ${m}.`,
     expression: `${minuend} − ${subtrahend} = ${diff}`,
     partialResult: diff,
   });
+
+  const abnGrid: AbnSubtractionGrid = {
+    kind: 'subtraction-parallel',
+    initialMinuend: minuend,
+    initialSubtrahend: subtrahend,
+    chunks,
+    rows: gridRows,
+  };
 
   return {
     operation: 'subtraction',
     operands: [minuend, subtrahend],
     result: diff,
     steps,
+    abnGrid,
   };
 }

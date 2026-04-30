@@ -28,7 +28,7 @@ const LABELS: Record<
     a: 'Primer sumando (A)',
     b: 'Segundo sumando (B)',
     legend: 'Suma ABN',
-    hint: 'Descomposición del segundo sumando y acumulación sobre el primero.',
+    hint: 'Descomposición del primer sumando y traslado al segundo (rejilla tipo aula).',
   },
   subtraction: {
     a: 'Minuendo',

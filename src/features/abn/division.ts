@@ -1,5 +1,9 @@
 import { decomposeByPlaceValue } from './decomposition';
-import type { AbnCalculationResult, AbnStep } from './types';
+import type {
+  AbnCalculationResult,
+  AbnDivisionGrid,
+  AbnStep,
+} from './types';
 
 function buildDecompositionExpression(parts: number[]): string {
   if (parts.length === 0) return '';
@@ -7,8 +11,8 @@ function buildDecompositionExpression(parts: number[]): string {
 }
 
 /**
- * División ABN: cociente entero descompuesto en grupos del divisor; en cada paso
- * se resta (grupos × divisor) del dividendo restante.
+ * División ABN: cociente descompuesto en grupos del divisor;
+ * rejilla de tres columnas alineada con el material (resto | quitado | cociente parcial).
  */
 export function generateAbnDivisionSteps(
   dividend: number,
@@ -34,11 +38,30 @@ export function generateAbnDivisionSteps(
       expression: `${dividend} = 0 × ${divisor} + ${remainder}`,
       partialResult: 0,
     });
+    const abnGrid: AbnDivisionGrid = {
+      kind: 'division-three-col',
+      divisor,
+      rows: [
+        {
+          remainder: dividend,
+          subtracted: null,
+          partialQuotient: null,
+        },
+        {
+          remainder,
+          subtracted: null,
+          partialQuotient: 0,
+        },
+      ],
+      totalQuotient: 0,
+      finalRemainder: remainder,
+    };
     return {
       operation: 'division',
       operands: [dividend, divisor],
       result: quotient,
       steps,
+      abnGrid,
     };
   }
 
@@ -54,10 +77,16 @@ export function generateAbnDivisionSteps(
 
   let runningRemainder = dividend;
   let accumulatedGroups = 0;
+  const gridRows: AbnDivisionGrid['rows'] = [];
 
   parts.forEach((groupCount, index) => {
     const product = groupCount * divisor;
     const before = runningRemainder;
+    gridRows.push({
+      remainder: before,
+      subtracted: product,
+      partialQuotient: groupCount,
+    });
     runningRemainder -= product;
     accumulatedGroups += groupCount;
     steps.push({
@@ -71,6 +100,12 @@ export function generateAbnDivisionSteps(
       afterValue: runningRemainder,
       partialResult: accumulatedGroups,
     });
+  });
+
+  gridRows.push({
+    remainder: runningRemainder,
+    subtracted: null,
+    partialQuotient: quotient,
   });
 
   steps.push({
@@ -88,10 +123,19 @@ export function generateAbnDivisionSteps(
     partialResult: quotient,
   });
 
+  const abnGrid: AbnDivisionGrid = {
+    kind: 'division-three-col',
+    divisor,
+    rows: gridRows,
+    totalQuotient: quotient,
+    finalRemainder: remainder,
+  };
+
   return {
     operation: 'division',
     operands: [dividend, divisor],
     result: quotient,
     steps,
+    abnGrid,
   };
 }
