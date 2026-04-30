@@ -7,7 +7,23 @@ type StepCardProps = {
   stepCount: number;
 };
 
+function changeDisplay(step: AbnStep): { label: string; text: string } | null {
+  if (
+    step.beforeValue === undefined ||
+    step.changeValue === undefined ||
+    step.afterValue === undefined
+  ) {
+    return null;
+  }
+  if (step.kind === 'division-chunk') {
+    return { label: 'Quitamos', text: `−${step.changeValue}` };
+  }
+  return { label: 'Cambio', text: `+${step.changeValue}` };
+}
+
 export function StepCard({ step, stepIndex, stepCount }: StepCardProps) {
+  const change = changeDisplay(step);
+
   return (
     <motion.article
       key={step.id}
@@ -28,9 +44,7 @@ export function StepCard({ step, stepIndex, stepCount }: StepCardProps) {
         {step.title}
       </h2>
       <p className="mt-3 text-lg text-slate-700">{step.explanation}</p>
-      {(step.beforeValue !== undefined &&
-        step.changeValue !== undefined &&
-        step.afterValue !== undefined) ? (
+      {change ? (
         <motion.div
           layout
           className="mt-4 grid gap-2 rounded-xl bg-teal-50/80 p-4 text-base sm:grid-cols-3"
@@ -51,11 +65,9 @@ export function StepCard({ step, stepIndex, stepCount }: StepCardProps) {
           </motion.div>
           <motion.div layout>
             <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Cambio
+              {change.label}
             </span>
-            <span className="text-xl font-semibold text-teal-800">
-              +{step.changeValue}
-            </span>
+            <span className="text-xl font-semibold text-teal-800">{change.text}</span>
           </motion.div>
           <motion.div layout>
             <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">

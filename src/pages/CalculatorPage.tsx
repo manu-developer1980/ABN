@@ -1,16 +1,33 @@
 import { useMemo, useState } from 'react';
-import { generateAbnAdditionSteps } from '../features/abn/addition';
-import type { AbnCalculationResult } from '../features/abn/types';
+import type { AbnCalculationResult, AbnOperation } from '../features/abn/types';
+import { runAbnCalculation } from '../features/abn/runCalculation';
 import { validateOperandInput } from '../features/abn/validators';
 import { OperationForm } from '../components/calculator/OperationForm';
 import { PlaceValueBlocks } from '../components/calculator/PlaceValueBlocks';
 import { StepCard } from '../components/calculator/StepCard';
 import { StepNavigator } from '../components/calculator/StepNavigator';
 import { StepsSummary } from '../components/calculator/StepsSummary';
+import { StepVisualGrids } from '../components/calculator/StepVisualGrids';
 import { VisualNumberLine } from '../components/calculator/VisualNumberLine';
 import { Button } from '../components/ui/Button';
 
+function operationSymbol(op: AbnOperation): string {
+  switch (op) {
+    case 'addition':
+      return '+';
+    case 'subtraction':
+      return '−';
+    case 'multiplication':
+      return '×';
+    case 'division':
+      return '÷';
+    default:
+      return '?';
+  }
+}
+
 export function CalculatorPage() {
+  const [operation, setOperation] = useState<AbnOperation>('addition');
   const [calculation, setCalculation] = useState<AbnCalculationResult | null>(
     null,
   );
@@ -28,8 +45,23 @@ export function CalculatorPage() {
 
   const scaleMax = useMemo(() => {
     if (!calculation) return 0;
-    return Math.max(...calculation.operands, calculation.result, 1);
+    const [x, y] = calculation.operands;
+    return Math.max(x, y, calculation.result, x + y, x * y, 1);
   }, [calculation]);
+
+  const placeBlocksValue = useMemo(() => {
+    if (!calculation || !currentStep) return null;
+    if (currentStep.kind !== 'decomposition') return null;
+    const [x, y] = calculation.operands;
+    switch (calculation.operation) {
+      case 'subtraction':
+        return x - y;
+      case 'division':
+        return Math.floor(x / y);
+      default:
+        return y;
+    }
+  }, [calculation, currentStep]);
 
   function handleSubmitOperands(rawA: string, rawB: string) {
     setErrorMessage(null);
@@ -45,13 +77,24 @@ export function CalculatorPage() {
       setCalculation(null);
       return;
     }
+    if (operation === 'division' && b.value === 0) {
+      setErrorMessage('El divisor debe ser mayor que 0.');
+      setCalculation(null);
+      return;
+    }
     try {
-      const result = generateAbnAdditionSteps(a.value, b.value);
+      const result = runAbnCalculation(operation, a.value, b.value);
       setCalculation(result);
       setStepIndex(0);
       setShowAll(false);
-    } catch {
-      setErrorMessage('No se pudo calcular. Comprueba los números.');
+    } catch (err) {
+      const msg =
+        err instanceof RangeError
+          ? err.message === 'minuend must be greater than or equal to subtrahend'
+            ? 'En la resta, el minuendo debe ser mayor o igual al sustrahendo.'
+            : err.message
+          : 'No se pudo calcular. Comprueba los números.';
+      setErrorMessage(msg);
       setCalculation(null);
     }
   }
@@ -64,20 +107,45 @@ export function CalculatorPage() {
     setFormKey((k) => k + 1);
   }
 
-  const [, secondOperand] = calculation?.operands ?? [0, 0];
+  function handleOperationChange(op: AbnOperation) {
+    setOperation(op);
+    setCalculation(null);
+    setErrorMessage(null);
+    setStepIndex(0);
+    setShowAll(false);
+    setFormKey((k) => k + 1);
+  }
+
+  const [opA, opB] = calculation?.operands ?? [0, 0];
+  const sym = calculation ? operationSymbol(calculation.operation) : '+';
+  const remainder =
+    calculation?.operation === 'division' && calculation.operands[1] !== 0
+      ? calculation.operands[0] % calculation.operands[1]
+      : null;
+
+  const showNumberLine =
+    currentStep &&
+    (currentStep.kind === 'accumulation' ||
+      currentStep.kind === 'subtraction-jump' ||
+      currentStep.kind === 'partial-product' ||
+      currentStep.kind === 'division-chunk') &&
+    currentStep.beforeValue !== undefined &&
+    currentStep.afterValue !== undefined;
 
   return (
     <div className="space-y-8">
       <header>
         <h1 className="text-3xl font-bold text-teal-950">Calculadora ABN</h1>
         <p className="mt-2 max-w-2xl text-lg text-slate-700">
-          Suma paso a paso: descomposición del segundo sumando y acumulación sobre
-          el primero.
+          Suma, resta, multiplicación y división con pasos explicados y rejillas
+          gráficas de apoyo.
         </p>
       </header>
 
       <OperationForm
         key={formKey}
+        operation={operation}
+        onOperationChange={handleOperationChange}
         onSubmitOperands={handleSubmitOperands}
         errorMessage={errorMessage}
       />
@@ -85,12 +153,24 @@ export function CalculatorPage() {
       {calculation ? (
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-teal-100 bg-teal-50/60 px-4 py-3">
-            <p className="text-lg font-semibold text-teal-950">
-              Operación actual:{' '}
-              <span className="font-mono">
-                {calculation.operands[0]} + {calculation.operands[1]}
-              </span>
-            </p>
+            <div>
+              <p className="text-lg font-semibold text-teal-950">
+                Operación actual:{' '}
+                <span className="font-mono">
+                  {opA} {sym} {opB}
+                </span>
+              </p>
+              {calculation.operation === 'division' &&
+              remainder !== null &&
+              remainder > 0 ? (
+                <p className="mt-1 text-sm text-slate-700">
+                  Cociente entero:{' '}
+                  <span className="font-mono font-semibold">{calculation.result}</span>
+                  {' — '}
+                  Resto: <span className="font-mono font-semibold">{remainder}</span>
+                </p>
+              ) : null}
+            </div>
             <Button type="button" variant="secondary" onClick={handleReset}>
               Reiniciar
             </Button>
@@ -103,14 +183,18 @@ export function CalculatorPage() {
                 stepIndex={safeIndex}
                 stepCount={steps.length}
               />
-              {currentStep.kind === 'decomposition' ? (
-                <PlaceValueBlocks value={secondOperand} />
+              {placeBlocksValue !== null && currentStep.kind === 'decomposition' ? (
+                <PlaceValueBlocks value={placeBlocksValue} />
               ) : null}
-              {currentStep.kind === 'accumulation' ? (
+              <StepVisualGrids calculation={calculation} currentStep={currentStep} />
+              {showNumberLine ? (
                 <VisualNumberLine
                   before={currentStep.beforeValue}
                   after={currentStep.afterValue}
                   max={scaleMax}
+                  mode={
+                    currentStep.kind === 'division-chunk' ? 'decrease' : 'increase'
+                  }
                 />
               ) : null}
             </>

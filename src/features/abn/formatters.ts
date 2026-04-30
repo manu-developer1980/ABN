@@ -1,4 +1,33 @@
-import type { AbnCalculationResult, AbnStep } from './types';
+import type { AbnCalculationResult, AbnOperation, AbnStep } from './types';
+
+function operationLabel(op: AbnOperation): string {
+  switch (op) {
+    case 'addition':
+      return '+';
+    case 'subtraction':
+      return '−';
+    case 'multiplication':
+      return '×';
+    case 'division':
+      return '÷';
+    default:
+      return '?';
+  }
+}
+
+function formatChangeLine(step: AbnStep): string {
+  if (
+    step.beforeValue === undefined ||
+    step.changeValue === undefined ||
+    step.afterValue === undefined
+  ) {
+    return '';
+  }
+  if (step.kind === 'division-chunk') {
+    return `Cambio: −${step.changeValue}`;
+  }
+  return `Cambio: +${step.changeValue}`;
+}
 
 function formatStepBlock(step: AbnStep, index: number, total: number): string {
   const lines: string[] = [];
@@ -11,7 +40,7 @@ function formatStepBlock(step: AbnStep, index: number, total: number): string {
   ) {
     lines.push('');
     lines.push(`Antes: ${step.beforeValue}`);
-    lines.push(`Cambio: +${step.changeValue}`);
+    lines.push(formatChangeLine(step));
     lines.push(`Después: ${step.afterValue}`);
     lines.push('');
   }
@@ -24,7 +53,8 @@ function formatStepBlock(step: AbnStep, index: number, total: number): string {
  */
 export function formatCalculationPlainText(result: AbnCalculationResult): string {
   const [a, b] = result.operands;
-  const header = `Operación: ${a} + ${b}`;
+  const sym = operationLabel(result.operation);
+  const header = `Operación: ${a} ${sym} ${b}`;
   const body = result.steps
     .filter((s) => s.kind !== 'result')
     .map((step, i, arr) => formatStepBlock(step, i, arr.length))

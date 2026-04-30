@@ -2,12 +2,19 @@ type VisualNumberLineProps = {
   before?: number;
   after?: number;
   max: number;
+  /** increase: suma hacia la derecha; decrease: resto que baja (división). */
+  mode?: 'increase' | 'decrease';
 };
 
 /**
- * Simple bar showing relative position before/after an accumulation step.
+ * Barra simple de posición relativa antes/después de un paso.
  */
-export function VisualNumberLine({ before, after, max }: VisualNumberLineProps) {
+export function VisualNumberLine({
+  before,
+  after,
+  max,
+  mode = 'increase',
+}: VisualNumberLineProps) {
   if (max <= 0 || before === undefined || after === undefined) {
     return null;
   }
@@ -20,7 +27,9 @@ export function VisualNumberLine({ before, after, max }: VisualNumberLineProps) 
       aria-hidden="true"
     >
       <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-        Línea de cantidad (aprox.)
+        {mode === 'decrease'
+          ? 'Resto tras quitar grupos (aprox.)'
+          : 'Línea de cantidad (aprox.)'}
       </p>
       <div className="relative h-3 rounded-full bg-slate-200">
         <div

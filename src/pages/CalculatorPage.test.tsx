@@ -57,4 +57,14 @@ describe('CalculatorPage', () => {
       await screen.findByRole('heading', { name: /todos los pasos/i }),
     ).toBeInTheDocument();
   });
+
+  it('rejects divisor cero en división', async () => {
+    const user = userEvent.setup();
+    renderCalculator();
+    await user.selectOptions(screen.getByLabelText(/operación/i), 'division');
+    await user.type(screen.getByLabelText(/dividendo/i), '10');
+    await user.type(screen.getByLabelText(/divisor/i), '0');
+    await user.click(screen.getByRole('button', { name: /calcular/i }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/divisor/i);
+  });
 });
